@@ -8,8 +8,7 @@ quicksort = (array) => {
 
   array.forEach((n, index) => {
     if (index === pivotIndex) return
-    if (n <= pivot) lessThan.push(n)
-    else greaterThan.push(n)
+    n <= pivot ? lessThan.push(n) : greaterThan.push(n)
   })
 
   return quicksort(lessThan)
