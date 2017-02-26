@@ -82,10 +82,15 @@ dijkstra(Graph, Vertices, Org, Dest) ->
 
 dijkstra(_, _, [], Heap, _, TargetVx) -> 
   path(Heap, [], TargetVx);
-dijkstra(Graph, Visited, Remain, Heap, ActualVx, TargetVx) ->
-  Edges = lists:filter(fun(X) -> contains(Remain, X) end, [digraph:edge(Graph, E) || E <- digraph:edges(Graph, element(1, ActualVx))]),
-  Vertices = [{Vx2, Dist + element(2, ActualVx)} || {_, _, Vx2, Dist} <- Edges],
-  HeapUpdated = lists:map(fun(X) -> updateDistances(X, Vertices, element(1, ActualVx)) end, Heap),
+dijkstra(Graph, Visited, Remain, Heap, {ActualVxName, ActualVxDist}, TargetVx) ->
+  % Get list of edges adjacents to the actual vertex included in remain list.
+  Edges = lists:filter(fun(X) -> contains(Remain, X) end, [digraph:edge(Graph, E) || E <- digraph:edges(Graph, ActualVxName)]),
+  % Extract destination vertices from the list of edges.
+  Vertices = [{Vx2, Dist + ActualVxDist} || {_, _, Vx2, Dist} <- Edges],
+  % Update all the Heap distances from the list of vertices.
+  HeapUpdated = lists:map(fun(X) -> updateDistances(X, Vertices, ActualVxName) end, Heap),
+  % Get the remain not visited vertices from the Heap.
   RemainFromHeap = lists:filter(fun({X, _, _}) -> contains(Remain, {"", "", X, ""}) end, HeapUpdated),
+  % Select the next vertex to visit, the one with minimum distance.
   NextVx = minimum([{Name, Distance} || {Name, Distance, _} <- RemainFromHeap]),
   dijkstra(Graph, lists:append(element(1, NextVx), Visited), remove(element(1, NextVx), Remain), HeapUpdated, NextVx, TargetVx).
